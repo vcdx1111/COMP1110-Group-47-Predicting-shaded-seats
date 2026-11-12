@@ -58,7 +58,7 @@ Everything under `outputs/` is generated and is not committed.
 | `outputs/tables/geometry_checks.csv` | Orientation, scale checks against published distances, foul-line angle |
 | `outputs/tables/sample_points.csv` | Position, head height and zone of every sample point |
 | `outputs/tables/points_shaded_base.csv` | Sun or shade for every sample point and time step (base case) |
-| `outputs/tables/validation_*.csv` | Validation results; written only when `data/labels.csv` exists |
+| `outputs/tables/validation_*.csv` | Validation against `data/labels.csv`: counts, scores, confusion matrices, per-label predictions |
 | `outputs/figures/fig1_shade_fraction.png` | q(t) on the three scenario dates, with the sensitivity range |
 | `outputs/figures/fig2_shade_map.png` | Plan view: which sample points are shaded at four times |
 | `outputs/figures/fig3_cross_section_3B.png` | Third-base stand cross-section with sun rays |
@@ -97,17 +97,21 @@ the ranking of the sections survives these changes.
 **Baseline.** The simple rule "a seat is shaded only if it is directly under the roof" is
 compared with the ray model.
 
-**Validation.** `shade.validation` compares the model with labelled broadcast frames.
-Copy `data/labels_template.csv` to `data/labels.csv`, fill it in, and list the dates under
-`validation` in the config.
+**Validation.** `shade.validation` compares the model with labelled frames from real games.
+`data/labels.csv` holds 204 labels from three Sunday games (26 April, 24 May and
+13 September 2026), all listed as test dates in the config because nothing in the model
+was tuned to them. To add labels, follow the layout of `data/labels_template.csv` and list
+the new dates under `validation` in the config.
 
 - Columns: `frame_id, date, source, timecode, time_kst, section, zone, label, labeller, excluded_reason`.
 - `zone` is `front`, `middle` or `back`: one row of the section's 3 × 3 grid (front = nearest the field).
 - `label` is `sun`, `shade`, `mixed` or `unknown`. Rows labelled `unknown`, and rows with an
   `excluded_reason`, are excluded.
 - `labeller` should be a code (for example `L1`, `L2`), not a name.
-- Each frame, section and zone is labelled by two labellers. Only labels on which both
-  agree enter the confusion matrices. Agreement (%) and Cohen's kappa are reported.
+- When a frame, section and zone is labelled by two labellers, only labels on which both
+  agree enter the confusion matrices, and agreement (%) and Cohen's kappa are reported.
+  The current labels come from one labeller, so `validation.use_single_labelled` is `true`
+  in the config and every non-excluded label is used.
 - The model predicts `sun` if 0 of the zone's 3 points are shaded, `shade` if 3 of 3, and
   `mixed` otherwise, at the exact time of the frame.
 - Per date: a 3-class confusion matrix, a binary sun/shade matrix (rows where the label or
@@ -148,8 +152,10 @@ Copy `data/labels_template.csv` to `data/labels.csv`, fill it in, and list the d
   much the results move with a finer grid or a coarser step.
 - **Baseline rule.** No sample point lies under a roof in plan view, so the baseline calls
   every section fully sunny on every date.
-- **Validation.** No labelled frames are included yet, so the model's accuracy is not
-  measured in this repository.
+- **Validation.** The 204 labels come from one labeller, so labeller agreement and Cohen's
+  kappa cannot be computed. The 13 September frames were taken between 17:05 and 18:10,
+  after the 14:00–17:00 window of the scenarios. Shade is rare in the April and May labels
+  (10 of 132), so the sun/shade accuracy on those dates rests mostly on sunny seats.
 
 ## Data provenance
 
@@ -161,6 +167,7 @@ Copy `data/labels_template.csv` to `data/labels.csv`, fill it in, and list the d
 | Stand profiles | Row counts and riser heights from seat-view listings; depths from satellite imagery |
 | Sun position | Computed with pvlib (NREL SPA); no measured data |
 | `tests/reference/` | Results of the group's first model run, kept as the regression reference |
+| `data/labels.csv` | Sun, shade or mixed labels read by the group from frames of three 2026 games; one labeller (code `L1`) |
 
 The source of every individual number is noted next to it in `data/config.yaml`.
 

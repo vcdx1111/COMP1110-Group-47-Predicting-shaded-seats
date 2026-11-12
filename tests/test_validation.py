@@ -116,7 +116,7 @@ def make_labels(tmp_path, geom, cfg):
 
 
 def test_validate_end_to_end(tmp_path, geom, cfg):
-    cfg2 = replace(cfg, calibration_dates=[CAL], test_dates=[TEST])
+    cfg2 = replace(cfg, calibration_dates=[CAL], test_dates=[TEST], use_single_labelled=False)
     res = V.validate(make_labels(tmp_path, geom, cfg2), geom, cfg2)
 
     counts = res["counts"].set_index("date")
@@ -143,7 +143,7 @@ def test_validate_end_to_end(tmp_path, geom, cfg):
 
 
 def test_date_outside_both_lists_is_an_error(tmp_path, geom, cfg):
-    cfg2 = replace(cfg, calibration_dates=[CAL], test_dates=[TEST])
+    cfg2 = replace(cfg, calibration_dates=[CAL], test_dates=[TEST], use_single_labelled=False)
     path = make_labels(tmp_path, geom, cfg2)
     with pytest.raises(ValueError, match="neither"):
         V.validate(path, geom, replace(cfg, calibration_dates=[CAL], test_dates=[]))

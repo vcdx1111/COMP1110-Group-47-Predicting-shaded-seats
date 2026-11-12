@@ -161,11 +161,11 @@ validation:
     value: []
     source: "Dates used while adjusting the model; fill in when labels exist"
   test_dates:
-    value: []
-    source: "Held-out dates, looked at only after the model is fixed; fill in when labels exist"
+    value: ["2026-04-26", "2026-05-24", "2026-09-13"]
+    source: "Three Sunday games labelled from broadcast frames (data/labels.csv). Nothing in the model was tuned to them, so all three are test dates"
   use_single_labelled:
-    value: false
-    source: "Only labels on which both labellers agree enter the confusion matrices"
+    value: true
+    source: "The labels come from one labeller, so there is no second label to agree with and every non-excluded label is used. Set to false once frames are double-labelled: then only labels on which both labellers agree enter the confusion matrices"
 
 worked_example:
   section:
